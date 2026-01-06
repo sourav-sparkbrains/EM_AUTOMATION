@@ -1,10 +1,9 @@
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
-from langgraph.types import interrupt, Command
+from langgraph.types import interrupt
 from datetime import datetime, timedelta
+from typing import Literal,cast
 
 from common.db import my_db
-from core.state import EMState, IntentDetection
+from core.state import EMState
 from common.log import logger
 
 
@@ -14,28 +13,15 @@ def intent_detection_node(state: EMState)-> EMState:
     """
     try:
         logger.info(f"Starting intent detection node for {state["user_id"]}.")
-        query = state.get("query", "").lower()
+        query = state.get("query", "").lower().strip()
 
         if not query:
             logger.error("Query is empty.")
             raise ValueError("Query is empty.")
 
-        from common.llm import lama_model
+        state["intent"] = cast(Literal["check_pending","fill_pending"], query)
 
-        parser = PydanticOutputParser(pydantic_object=IntentDetection)
-
-        prompt = PromptTemplate(
-            template="""You are an intent classification model. Classify the following user query {query} using {format_instructions}""",
-            input_variables=['query'],
-            partial_variables= {'format_instructions': parser.get_format_instructions()}
-        )
-
-        chain = prompt | lama_model | parser
-
-        intent_result = chain.invoke({"query": query})
-
-        state["intent"] = intent_result
-        logger.info(f"Detected intent: {intent_result.intent}")
+        logger.info(f"Detected intent: {state["intent"] }")
         logger.info(f"Intent detection node completed for {state["user_id"]}.")
 
         state["stage"] = "intent_detected"

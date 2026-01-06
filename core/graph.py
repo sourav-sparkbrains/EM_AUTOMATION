@@ -15,7 +15,7 @@ def router_node_after_intent(state: EMState) -> str:
     """
         Routes to the next node based on detected intent.
     """
-    intent = state.get("intent").intent
+    intent = state.get("intent")
 
     if intent == "check_pending":
         return "fetch_pending_dates"

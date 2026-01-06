@@ -1,8 +1,5 @@
 from typing import TypedDict, List, Literal, Optional, Dict, Any
-from pydantic import BaseModel, Field
 
-class IntentDetection(BaseModel):
-    intent:Literal["check_pending","fill_pending"] = Field(description="Based on the user query, classify the intent into one of the given categories")
 
 class EMState(TypedDict):
     """
@@ -10,7 +7,7 @@ class EMState(TypedDict):
     """
     user_id: str
     query: str
-    intent:IntentDetection
+    intent:Literal["check_pending","fill_pending"]
     stage:Optional[str]
     pending_dates: Optional[List[str]]
     available_projects: Optional[List[Dict[str, Any]]]
